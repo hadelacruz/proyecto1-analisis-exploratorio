@@ -1,0 +1,291 @@
+---
+title: "Proyecto 1: Análisis Exploratorio de Datos"
+author: "Grupo 4"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Carga de librerías permitidas y necesarias
+library(haven)
+library(dplyr)
+library(purrr)
+library(janitor)
+library(stringr)
+library(psych)    
+library(knitr)    
+library(ggplot2)  
+library(corrplot) 
+library(gridExtra)
+library(moments)
+```
+
+```{r}
+# --- 1. CARGA DE ARCHIVOS Y ESTANDARIZACIÓN ---
+# Asegúrate de tener estas carpetas y archivos .sav en 'data/'
+ruta <- "data/"
+archivos <- list.files(path = ruta, pattern = "\\.sav$", full.names = TRUE)
+
+leer_divorcios <- function(archivo) {
+  # Lectura con limpieza de nombres
+  datos <- read_sav(archivo) %>% janitor::clean_names()
+  anio_archivo <- as.numeric(str_extract(archivo, "\\d{4}"))
+  
+  # Consistencia en la variable de año
+  if (!"anioocu" %in% names(datos)) {
+    datos <- datos %>% mutate(anioocu = anio_archivo)
+  }
+  
+  # Creación de columnas temporales para evitar errores de objeto no encontrado
+  if ("puehom" %in% names(datos)) {
+    datos <- datos %>% mutate(pueblo_h = as.character(as_factor(puehom)))
+  } else if ("pperhom" %in% names(datos)) {
+    datos <- datos %>% mutate(pueblo_h = as.character(as_factor(pperhom)))
+  }
+  
+  if ("puemuj" %in% names(datos)) {
+    datos <- datos %>% mutate(pueblo_m = as.character(as_factor(puemuj)))
+  } else if ("ppermuj" %in% names(datos)) {
+    datos <- datos %>% mutate(pueblo_m = as.character(as_factor(ppermuj)))
+  }
+  
+  # Estandarización de tipos de datos para la unión
+  cols_char <- c("ciuohom", "ciuomuj")
+  datos[cols_char[cols_char %in% names(datos)]] <- lapply(datos[cols_char[cols_char %in% names(datos)]], as.character)
+  
+  return(datos)
+}
+
+# SE CREA EL OBJETO 'divorcios' AQUÍ
+divorcios <- map_df(archivos, leer_divorcios)
+
+# --- 2. LIMPIEZA FINAL Y UNIFICACIÓN DE CATEGORÍAS ---
+divorcios_limpio <- divorcios %>%
+  mutate(
+    anioocu = coalesce(anioocu, anoocu),
+    
+    # UNIFICACIÓN DE ETNIAS: Se agrupan todas las variantes en una sola
+    pueblo_hom = case_when(
+      str_detect(pueblo_h, "Ladino|Mestizo|ladino|mestizo") ~ "Ladino / Mestizo",
+      str_detect(pueblo_h, "Maya|maya") ~ "Maya",
+      str_detect(pueblo_h, "Xinka|Xinca|xinka|xinca") ~ "Xinka",
+      str_detect(pueblo_h, "Garifuna|Garífuna") ~ "Garífuna",
+      str_detect(pueblo_h, "Ignorado|ignorado") ~ "Ignorado",
+      TRUE ~ str_to_title(pueblo_h)
+    ),
+    
+    pueblo_muj = case_when(
+      str_detect(pueblo_m, "Ladino|Mestizo|ladino|mestizo") ~ "Ladino / Mestizo",
+      str_detect(pueblo_m, "Maya|maya") ~ "Maya",
+      str_detect(pueblo_m, "Xinka|Xinca|xinka|xinca") ~ "Xinka",
+      str_detect(pueblo_m, "Garifuna|Garífuna") ~ "Garífuna",
+      str_detect(pueblo_m, "Ignorado|ignorado") ~ "Ignorado",
+      TRUE ~ str_to_title(pueblo_m)
+    ),
+    
+    # Tratamiento de valores ignorados (999) en edades
+    edadhom = ifelse(edadhom > 100, NA, edadhom),
+    edadmuj = ifelse(edadmuj > 100, NA, edadmuj)
+  ) %>%
+  # Se eliminan columnas auxiliares para el reporte formal
+  select(-any_of(c("anoocu", "puehom", "pperhom", "puemuj", "ppermuj", "pueblo_h", "pueblo_m")))
+```
+
+# Descripción General del Conjunto de Datos
+
+El conjunto de datos analizado corresponde a los registros de divorcios en Guatemala publicados por el INE. Se han unificado registros que abarcan un periodo superior a los 10 años para identificar patrones sociales a largo plazo.
+
+Cantidad de observaciones: `r nrow(divorcios_limpio)` registros
+
+
+Cantidad de variables: `r ncol(divorcios_limpio)` variables
+
+# Significado y Tipo de las Variables
+
+A continuación se detallan las 19 variables principales del conjunto de datos:
+ 
+ 
+```{r}
+# Creación del diccionario de variables con las descripciones solicitadas
+diccionario <- data.frame(
+  Variable = c(
+    "depreg", "mupreg", "mesreg", "anoreg", "diaocu", 
+    "mesocu", "depocu", "mupocu", "edadhom", "edadmuj", 
+    "nachom", "nacmuj", "eschom", "escmuj", "ciuohom", 
+    "ciuomuj", "anioocu", "pueblo_hom", "pueblo_muj"
+  ),
+  Significado = c(
+    "Departamento de registro", "Municipio de registro", "Mes de registro", 
+    "Año de registro", "Día de la ruptura", "Mes de la ruptura", 
+    "Departamento del evento", "Municipio del evento", "Edad del esposo", 
+    "Edad de la esposa", "Nacionalidad (Hombre)", "Nacionalidad (Mujer)", 
+    "Escolaridad (Hombre)", "Escolaridad (Mujer)", "Ciudad origen (Hombre)", 
+    "Ciudad origen (Mujer)", "Año del evento", "Pueblo de pertenencia del hombre (Etnia)", 
+    "Pueblo de pertenencia de la mujer (Etnia)"
+  ),
+  Tipo = c(
+    "Categórica Nominal", "Categórica Nominal", "Categórica Ordinal", 
+    "Numérica Discreta", "Numérica Discreta", "Categórica Ordinal", 
+    "Categórica Nominal", "Categórica Nominal", "Numérica Continua", 
+    "Numérica Continua", "Categórica Nominal", "Categórica Nominal", 
+    "Categórica Ordinal", "Categórica Ordinal", "Categórica Nominal", 
+    "Categórica Nominal", "Numérica Discreta", "Categórica Nominal", 
+    "Categórica Nominal"
+  )
+)
+
+# Mostrar la tabla en el documento
+kable(diccionario, caption = "Diccionario de Variables del Proyecto")
+```
+
+# Exploración de Variables Numéricas
+
+Se analizan las variables cuantitativas mediante estadística descriptiva para entender el perfil de edad de la población.
+
+
+### Medidas de Tendencia Central y Distribución
+
+```{r}
+# Seleccionamos las variables numéricas de interés
+vars_cuantitativas <- divorcios_limpio %>% 
+  select(edadhom, edadmuj, anioocu)
+
+resumen_stats <- psych::describe(vars_cuantitativas) %>%
+  select(n, mean, sd, median, min, max, range, skew, kurtosis)
+
+kable(resumen_stats, digits = 2, 
+      caption = "Resumen Estadístico: Tendencia Central, Distribución y Orden")
+```
+
+
+
+### Determinación de la Distribución
+
+```{r}
+# Gráfico exploratorio de distribución [cite: 65]
+ggplot(divorcios_limpio, aes(x = edadhom)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "#3498db", color = "white") +
+  geom_density(color = "#e74c3c", size = 1.2) +
+  labs(title = "Distribución de Edad del Hombre", x = "Edad", y = "Densidad") +
+  theme_minimal()
+
+# Gráfico exploratorio de distribución para la edad de la mujer
+ggplot(divorcios_limpio, aes(x = edadmuj)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "#e67e22", color = "white") +
+  geom_density(color = "#c0392b", size = 1.2) +
+  labs(title = "Distribución de Edad de la Mujer", 
+       x = "Edad de la Mujer", 
+       y = "Densidad") +
+  theme_minimal()
+
+```
+
+# Análisis de Distribución y Outliers
+```{r}
+# Diagramas de caja para identificar cuartiles (orden) y valores fuera de rango (outliers)
+p_box_h <- ggplot(divorcios_limpio, aes(y = edadhom)) +
+  geom_boxplot(fill = "steelblue", outlier.color = "red", alpha = 0.7) +
+  labs(title = "Caja y Bigotes: Edad Hombre", y = "Edad") +
+  theme_minimal()
+
+p_box_m <- ggplot(divorcios_limpio, aes(y = edadmuj)) +
+  geom_boxplot(fill = "darkorange", outlier.color = "red", alpha = 0.7) +
+  labs(title = "Caja y Bigotes: Edad Mujer", y = "Edad") +
+  theme_minimal()
+
+grid.arrange(p_box_h, p_box_m, ncol = 2)
+```
+
+
+# Exploración de Variables Categóricas
+
+Se utilizan tablas de frecuencia y proporciones para estudiar las variables cualitativas
+
+### Frecuencia por Departamento
+
+```{r}
+# TFrecuencia por Departamento
+divorcios_limpio %>%
+  mutate(Depto = as_factor(depocu)) %>%
+  tabyl(Depto) %>%
+  adorn_pct_formatting() %>%
+  arrange(desc(n)) %>% head(10) %>% kable()
+  head(30) %>% 
+  kable(caption = "Top Departamenstos con mayor número de divorcios")
+```
+
+### Frecuencia por Municipio de Ocurrencia
+
+```{r}
+# Tabla de frecuencia por Municipio de Ocurrencia
+divorcios_limpio %>%
+  mutate(Municipio = as_factor(mupocu)) %>%
+  tabyl(Municipio) %>%
+  adorn_pct_formatting() %>%
+  arrange(desc(n)) %>% 
+  head(30) %>% 
+  kable(caption = "Top Municipios con mayor número de divorcios")
+```
+
+
+### Frecuencia por Mes de Ocurrencia
+
+```{r}
+# Frecuencia por Mes de Ocurrencia
+divorcios_limpio %>%
+  mutate(Mes = as_factor(mesocu)) %>%
+  tabyl(Mes) %>%
+  adorn_pct_formatting() %>% kable()
+```
+
+### Frecuencia por Escolaridad
+
+```{r}
+# Tabla de frecuencia para Escolaridad (Ordinal)
+divorcios_limpio %>%
+  mutate(Escolaridad = as_factor(eschom)) %>%
+  tabyl(Escolaridad) %>%
+  adorn_pct_formatting() %>% kable()
+```
+
+
+### Frecuencia por Pueblo de Pertenencia Hombre 
+
+```{r}
+# Tabla de frecuencia para el Hombre
+divorcios_limpio %>%
+  tabyl(pueblo_hom) %>%
+  adorn_pct_formatting() %>%
+  arrange(desc(n)) %>% kable(caption = "Distribución Étnica Hombre")
+```
+
+### Frecuencia por Pueblo de Pertenencia Mujer
+
+```{r}
+# Tabla de frecuencia para la Mujer
+divorcios_limpio %>%
+  tabyl(pueblo_muj) %>%
+  adorn_pct_formatting() %>%
+  arrange(desc(n)) %>% kable(caption = "Distribución Étnica Mujer")
+```
+
+
+
+# Relaciones entre Variables
+
+```{r}
+# Gráfico de dispersión para ver la relación directa entre edades
+ggplot(divorcios_limpio, aes(x = edadhom, y = edadmuj)) +
+  # Usamos alpha para que los puntos sean semitransparentes (evita que se vea una mancha sólida)
+  geom_point(alpha = 0.05, color = "#3498db") + 
+  # Añadimos una línea de tendencia (regresión lineal) en rojo
+  geom_smooth(method = "lm", color = "#e74c3c", se = TRUE) +
+  labs(title = "Relación entre la Edad del Hombre y la Mujer",
+       subtitle = "La línea roja indica la tendencia principal de la relación",
+       x = "Edad del Hombre",
+       y = "Edad de la Mujer") +
+  theme_minimal()
+
+```

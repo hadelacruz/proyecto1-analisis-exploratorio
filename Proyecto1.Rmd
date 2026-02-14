@@ -297,25 +297,38 @@ ggplot(divorcios_limpio, aes(x = edadhom, y = edadmuj)) +
 
 #Escolaridad vs edad hombre
 
-divorcios_sin_ign <- subset(divorcios_limpio, eschom != 9)
-
-ggplot(divorcios_sin_ign, aes(x = factor(eschom), y = edadhom, fill = factor(eschom))) +
+divorcios_limpio %>%
+  mutate(eschom = as_factor(eschom)) %>%
+  filter(eschom != "Ignorado") %>%
+  ggplot(aes(x = eschom,
+             y = edadhom,
+             fill = eschom)) +
   geom_boxplot(outlier.alpha = 0.2) +
   theme_minimal() +
-  theme(legend.position = "none") +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
   labs(title = "Edad del hombre según nivel educativo",
        x = "Nivel educativo",
        y = "Edad")
 
 
+
 #Escolaridad vs edad mujer
 
-divorcios_sin_ign <- subset(divorcios_limpio, eschom != 9)
-
-ggplot(divorcios_sin_ign, aes(x = factor(escmuj), y = edadmuj, fill = factor(escmuj))) +
+divorcios_limpio %>%
+  mutate(escmuj = as_factor(escmuj)) %>%
+  filter(escmuj != "Ignorado") %>%
+  ggplot(aes(x = escmuj,
+             y = edadmuj,
+             fill = escmuj)) +
   geom_boxplot(outlier.alpha = 0.2) +
   theme_minimal() +
-  theme(legend.position = "none") +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
   labs(title = "Edad de la mujer según nivel educativo",
        x = "Nivel educativo",
        y = "Edad")
@@ -323,28 +336,35 @@ ggplot(divorcios_sin_ign, aes(x = factor(escmuj), y = edadmuj, fill = factor(esc
 
 
 
+
 #departamento vs edad
 
-edad_dep_hom <- aggregate(edadhom ~ depocu,
+edad_dep_hom <- aggregate(edadhom ~ as_factor(depocu),
                           data = divorcios_limpio,
                           mean)
 
 edad_dep_hom
 
-edad_dep_muj <- aggregate(edadmuj ~ depocu,
+
+edad_dep_muj <- aggregate(edadmuj ~ as_factor(depocu),
                           data = divorcios_limpio,
                           mean)
 
 edad_dep_muj
 
+div_tmp <- divorcios_limpio %>%
+  mutate(depocu = as_factor(depocu))
+
+edad_dep_hom <- aggregate(edadhom ~ depocu, data = div_tmp, mean)
+edad_dep_muj <- aggregate(edadmuj ~ depocu, data = div_tmp, mean)
+
 edad_dep_hom$sexo <- "Hombre"
 edad_dep_muj$sexo <- "Mujer"
 
-colnames(edad_dep_hom)[2] <- "edad_prom"
-colnames(edad_dep_muj)[2] <- "edad_prom"
+names(edad_dep_hom)[2] <- "edad_prom"
+names(edad_dep_muj)[2] <- "edad_prom"
 
 edad_dep <- rbind(edad_dep_hom, edad_dep_muj)
-
 
 ggplot(edad_dep,
        aes(x = reorder(depocu, edad_prom),
@@ -359,11 +379,28 @@ ggplot(edad_dep,
        fill = "Sexo")
 
 
+#escolaridad hombre vs escolaridad mujer
+
+divorcios_limpio %>%
+  mutate(
+    eschom = as_factor(eschom),
+    escmuj = as_factor(escmuj)
+  ) %>%
+  filter(eschom != "Ignorado", escmuj != "Ignorado") %>%
+  count(eschom, escmuj) %>%
+  ggplot(aes(x = eschom, y = escmuj, fill = n)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  theme_minimal() +
+  labs(title = "Escolaridad del hombre vs escolaridad de la mujer",
+       x = "Escolaridad hombre",
+       y = "Escolaridad mujer")
+
 
 ```
 
 
-
+#
 
 
 

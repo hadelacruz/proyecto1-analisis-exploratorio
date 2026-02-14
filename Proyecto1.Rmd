@@ -290,6 +290,83 @@ ggplot(divorcios_limpio, aes(x = edadhom, y = edadmuj)) +
   theme_minimal()
 
 ```
+#CRUCE DE VARIABLES
+
+```{r}
+# C) Cruzar variables importantes
+
+#Escolaridad vs edad hombre
+
+divorcios_sin_ign <- subset(divorcios_limpio, eschom != 9)
+
+ggplot(divorcios_sin_ign, aes(x = factor(eschom), y = edadhom, fill = factor(eschom))) +
+  geom_boxplot(outlier.alpha = 0.2) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "Edad del hombre según nivel educativo",
+       x = "Nivel educativo",
+       y = "Edad")
+
+
+#Escolaridad vs edad mujer
+
+divorcios_sin_ign <- subset(divorcios_limpio, eschom != 9)
+
+ggplot(divorcios_sin_ign, aes(x = factor(escmuj), y = edadmuj, fill = factor(escmuj))) +
+  geom_boxplot(outlier.alpha = 0.2) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "Edad de la mujer según nivel educativo",
+       x = "Nivel educativo",
+       y = "Edad")
+
+
+
+
+#departamento vs edad
+
+edad_dep_hom <- aggregate(edadhom ~ depocu,
+                          data = divorcios_limpio,
+                          mean)
+
+edad_dep_hom
+
+edad_dep_muj <- aggregate(edadmuj ~ depocu,
+                          data = divorcios_limpio,
+                          mean)
+
+edad_dep_muj
+
+edad_dep_hom$sexo <- "Hombre"
+edad_dep_muj$sexo <- "Mujer"
+
+colnames(edad_dep_hom)[2] <- "edad_prom"
+colnames(edad_dep_muj)[2] <- "edad_prom"
+
+edad_dep <- rbind(edad_dep_hom, edad_dep_muj)
+
+
+ggplot(edad_dep,
+       aes(x = reorder(depocu, edad_prom),
+           y = edad_prom,
+           fill = sexo)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Edad promedio de divorcio por departamento y sexo",
+       x = "Departamento",
+       y = "Edad promedio",
+       fill = "Sexo")
+
+
+
+```
+
+
+
+
+
+
 
 # GRAFICOS EXPLORATORIOS
 

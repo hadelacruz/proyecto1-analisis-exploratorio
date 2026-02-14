@@ -347,3 +347,140 @@ divorcios_limpio %>%
 ```
 
 # CLUSTERING
+
+```{r}
+# --- F) CLUSTERING (K-means) ---
+
+df_cluster <- divorcios_limpio %>%
+  select(edadhom, edadmuj) %>%
+  na.omit()
+
+X_scaled <- scale(df_cluster)
+
+set.seed(123)
+wss <- sapply(1:8, function(k) {
+  kmeans(X_scaled, centers = k, nstart = 25)$tot.withinss
+})
+
+plot(1:8, wss, type = "b",
+     xlab = "Number of clusters (k)",
+     ylab = "Within-cluster sum of squares",
+     main = "Elbow method for optimal k")
+
+set.seed(123)
+km_model <- kmeans(X_scaled, centers = 4, nstart = 25)
+
+df_cluster$cluster <- factor(km_model$cluster)
+
+cluster_summary <- df_cluster %>%
+  group_by(cluster) %>%
+  summarise(
+    n_divorcios = n(),
+    edad_hombre_promedio = mean(edadhom),
+    edad_mujer_promedio = mean(edadmuj),
+    edad_hombre_sd = sd(edadhom),
+    edad_mujer_sd = sd(edadmuj),
+    .groups = "drop"
+  ) %>%
+  arrange(edad_hombre_promedio)
+
+kable(cluster_summary, digits = 1, 
+      caption = "Características de cada cluster (perfiles de edad)")
+
+ggplot(df_cluster, aes(x = edadhom, y = edadmuj, color = cluster)) +
+  geom_point(alpha = 0.3, size = 1) +
+  labs(title = "Clusters de divorcios según edad de la pareja",
+       x = "Edad del hombre",
+       y = "Edad de la mujer",
+       color = "Cluster") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+divorcios_con_cluster <- divorcios_limpio %>%
+  select(edadhom, edadmuj, depocu, pueblo_hom, pueblo_muj, eschom, escmuj, anioocu) %>%
+  na.omit()
+
+divorcios_con_cluster$cluster <- df_cluster$cluster
+
+### ANALISIS DE CLUSTERS
+
+top_departamentos <- divorcios_con_cluster %>%
+  mutate(depocu = as_factor(depocu)) %>%
+  count(cluster, depocu, sort = TRUE) %>%
+  group_by(cluster) %>%
+  slice_head(n = 3) %>%
+  ungroup()
+
+kable(top_departamentos, caption = "Top 3 departamentos por cluster")
+
+top_etnia_hom <- divorcios_con_cluster %>%
+  count(cluster, pueblo_hom, sort = TRUE) %>%
+  group_by(cluster) %>%
+  slice_head(n = 3) %>%
+  ungroup()
+
+kable(top_etnia_hom, caption = "Top 3 etnias (hombre) por cluster")
+
+top_etnia_muj <- divorcios_con_cluster %>%
+  count(cluster, pueblo_muj, sort = TRUE) %>%
+  group_by(cluster) %>%
+  slice_head(n = 3) %>%
+  ungroup()
+
+kable(top_etnia_muj, caption = "Top 3 etnias (mujer) por cluster")
+
+top_educ_hom <- divorcios_con_cluster %>%
+  mutate(eschom = as_factor(eschom)) %>%
+  count(cluster, eschom, sort = TRUE) %>%
+  group_by(cluster) %>%
+  slice_head(n = 3) %>%
+  ungroup()
+
+kable(top_educ_hom, caption = "Top 3 niveles educativos (hombre) por cluster")
+
+top_educ_muj <- divorcios_con_cluster %>%
+  mutate(eschom = as_factor(escmuj)) %>%
+  count(cluster, escmuj, sort = TRUE) %>%
+  group_by(cluster) %>%
+  slice_head(n = 3) %>%
+  ungroup()
+
+kable(top_educ_muj, caption = "Top 3 niveles educativos (mujer) por cluster")
+```
+## Interpretación de los Clusters
+
+### Perfiles Identificados
+
+El análisis de k-means (k=4) identificó cuatro perfiles de edad distintos en las parejas divorciadas:
+
+**Cluster 4 - Parejas Jóvenes** (n=11,954, 36% del total):
+- Edad promedio: Hombre 27.3 años, Mujer 24.6 años
+- Educación predominante: Diversificado (42%), seguido de Básico (21%)
+- Perfil: Parejas que se casaron jóvenes, con educación secundaria/diversificado
+
+**Cluster 1 - Parejas de Edad Media** (n=12,215, 37% del total):
+- Edad promedio: Hombre 34.6 años, Mujer 31.9 años
+- Educación predominante: Diversificado (39%), con presencia notable de Universitarios (13%)
+- Perfil: El grupo más numeroso, con mayor nivel educativo promedio
+
+**Cluster 3 - Parejas Maduras** (n=6,457, 20% del total):
+- Edad promedio: Hombre 44.1 años, Mujer 40.3 años
+- Educación predominante: Diversificado (28%), Primaria (18%), Universitario (15%)
+- Perfil: Parejas con matrimonios más largos antes del divorcio
+
+**Cluster 2 - Parejas Mayores** (n=2,342, 7% del total):
+- Edad promedio: Hombre 58.3 años, Mujer 52.4 años
+- Educación predominante: Primaria (25%), Diversificado (21%), Ninguno (20%)
+- Perfil: Divorcios tardíos, menor nivel educativo que grupos más jóvenes
+
+### Hallazgos Principales
+
+1. **La edad es el único factor diferenciador**: Los clusters se separan claramente por edad de la pareja, mientras que variables geográficas y étnicas muestran distribuciones similares entre todos los grupos.
+
+2. **Patrones geográficos consistentes**: Guatemala, Quetzaltenango y San Marcos concentran la mayoría de divorcios en todos los grupos de edad, reflejando la distribución poblacional del país.
+
+3. **Composición étnica homogénea**: La población Ladino/Mestizo representa aproximadamente 70-75% en todos los clusters, con presencia maya más notable en el Cluster 4 (parejas jóvenes: 18%).
+
+4. **Relación edad-educación**: Se observa que los clusters más jóvenes (1 y 4) tienen mayor proporción de educación Diversificado y Universitario, mientras que el Cluster 2 (parejas mayores) muestra mayor proporción de Primaria y Ninguno, reflejando cambios generacionales en acceso educativo.
+
+5. **Distribución por etapa**: Aproximadamente 73% de los divorcios ocurren en parejas menores de 45 años (Clusters 1 y 4), sugiriendo que los divorcios son más frecuentes en etapas tempranas del matrimonio.

@@ -400,8 +400,127 @@ divorcios_limpio %>%
 ```
 
 
-#
+#PREGUNTAS DE INVESTIGACION
+1. ¿Es más frecuente el divorcio en las áreas más urbanas?
 
+```{r}
+divorcios_limpio %>%
+  mutate(depocu = as_factor(depocu)) %>%
+  count(depocu, sort = TRUE)
+
+
+
+
+```
+
+2. ¿Las personas con mayor nivel educativo se divorcian a edades más avanzadas?
+
+```{r}
+divorcios_limpio %>%
+  mutate(eschom = as_factor(eschom)) %>%
+  filter(eschom != "Ignorado") %>%
+  ggplot(aes(x = eschom, y = edadhom, fill = eschom)) +
+  geom_boxplot(outlier.alpha = 0.2) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  labs(title = "Edad del hombre según nivel educativo",
+       x = "Nivel educativo",
+       y = "Edad")
+
+divorcios_limpio %>%
+  mutate(escmuj = as_factor(escmuj)) %>%
+  filter(escmuj != "Ignorado") %>%
+  ggplot(aes(x = escmuj, y = edadmuj, fill = escmuj)) +
+  geom_boxplot(outlier.alpha = 0.2) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  labs(title = "Edad de la mujer según nivel educativo",
+       x = "Nivel educativo",
+       y = "Edad")
+
+divorcios_limpio %>%
+  mutate(eschom = as_factor(eschom)) %>%
+  filter(eschom != "Ignorado") %>%
+  group_by(eschom) %>%
+  summarise(media = mean(edadhom, na.rm = TRUE)) %>%
+  ggplot(aes(x = eschom, y = media)) +
+  geom_col(fill = "steelblue") +
+  theme_minimal() +
+  labs(title = "Edad promedio del hombre por nivel educativo",
+       x = "Nivel educativo",
+       y = "Edad promedio")
+
+
+divorcios_limpio %>%
+  mutate(escmuj = as_factor(escmuj)) %>%
+  filter(escmuj != "Ignorado") %>%
+  group_by(escmuj) %>%
+  summarise(media = mean(edadmuj, na.rm = TRUE)) %>%
+  ggplot(aes(x = escmuj, y = media)) +
+  geom_col(fill = "deeppink3") +
+  theme_minimal() +
+  labs(title = "Edad promedio de la mujer por nivel educativo",
+       x = "Nivel educativo",
+       y = "Edad promedio")
+
+
+
+
+```
+
+
+3. ¿La diferencia de edad influye en el divorcio?
+
+```{r}
+divorcios_limpio %>%
+  mutate(dif_edad = edadhom - edadmuj) %>%
+  summary()
+
+
+ggplot(divorcios_limpio,
+       aes(x = edadhom - edadmuj)) +
+  geom_histogram()
+
+
+```
+4. ¿Las parejas que se divorcian tienden a tener niveles educativos similares?
+```{r}
+divorcios_limpio %>%
+  mutate(
+    eschom = as_factor(eschom),
+    escmuj = as_factor(escmuj)
+  ) %>%
+  filter(eschom != "Ignorado", escmuj != "Ignorado") %>%
+  count(eschom, escmuj) %>%
+  ggplot(aes(x = eschom, y = escmuj, fill = n)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  theme_minimal() +
+  labs(title = "Escolaridad del hombre vs escolaridad de la mujer",
+       x = "Escolaridad hombre",
+       y = "Escolaridad mujer")
+
+
+tabla <- divorcios_limpio %>%
+  mutate(
+    eschom = as_factor(eschom),
+    escmuj = as_factor(escmuj)
+  ) %>%
+  filter(eschom != "Ignorado", escmuj != "Ignorado") %>%
+  count(eschom, escmuj) %>%
+  group_by(eschom) %>%
+  mutate(prop = n / sum(n))
+
+tabla
+
+
+```
 
 
 

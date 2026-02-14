@@ -2,7 +2,7 @@ paquetes <- c("haven", "dplyr", "purrr", "janitor", "stringr")
 
 instalar_si_falta <- function(pkg) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
-    install.packages(pkg)
+    install.packages(pkg, repos = "https://cloud.r-project.org")
   }
 }
 

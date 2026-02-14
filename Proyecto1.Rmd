@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+options(repos = c(CRAN = "https://cloud.r-project.org"))
 
 # Carga de librerías permitidas y necesarias
 library(haven)
@@ -211,9 +212,9 @@ divorcios_limpio %>%
   mutate(Depto = as_factor(depocu)) %>%
   tabyl(Depto) %>%
   adorn_pct_formatting() %>%
-  arrange(desc(n)) %>% head(10) %>% kable()
-  head(30) %>% 
-  kable(caption = "Top Departamenstos con mayor número de divorcios")
+  arrange(desc(n)) %>%
+  head(10) %>%
+  kable(caption = "Top Departamentos con mayor número de divorcios")
 ```
 
 ### Frecuencia por Municipio de Ocurrencia
@@ -289,3 +290,60 @@ ggplot(divorcios_limpio, aes(x = edadhom, y = edadmuj)) +
   theme_minimal()
 
 ```
+
+# GRAFICOS EXPLORATORIOS
+
+```{r}
+# --- E) GRAFICOS EXPLORATORIOS ---
+
+# 1) Distribuciones de edades
+ggplot(divorcios_limpio, aes(x = edadhom)) +
+  geom_histogram(bins = 30) +
+  labs(title = "Distribución edad hombre", x = "Edad", y = "Frecuencia") +
+  theme_minimal()
+
+ggplot(divorcios_limpio, aes(x = edadmuj)) +
+  geom_histogram(bins = 30) +
+  labs(title = "Distribución edad mujer", x = "Edad", y = "Frecuencia") +
+  theme_minimal()
+
+# 2) Boxplots (outliers)
+ggplot(divorcios_limpio, aes(y = edadhom)) +
+  geom_boxplot() +
+  labs(title = "Boxplot edad hombre", y = "Edad") +
+  theme_minimal()
+
+ggplot(divorcios_limpio, aes(y = edadmuj)) +
+  geom_boxplot() +
+  labs(title = "Boxplot edad mujer", y = "Edad") +
+  theme_minimal()
+
+# 3) Relación edad hombre vs mujer
+ggplot(divorcios_limpio, aes(x = edadhom, y = edadmuj)) +
+  geom_point(alpha = 0.05) +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(title = "Edad hombre vs edad mujer", x = "Edad hombre", y = "Edad mujer") +
+  theme_minimal()
+
+# 4) Divorcios por año (tendencia)
+divorcios_limpio %>%
+  count(anioocu) %>%
+  ggplot(aes(x = anioocu, y = n)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Divorcios por año", x = "Año", y = "Cantidad") +
+  theme_minimal()
+
+# 5) Top departamentos
+divorcios_limpio %>%
+  mutate(depocu = as_factor(depocu)) %>%
+  count(depocu, sort = TRUE) %>%
+  slice_head(n = 10) %>%
+  ggplot(aes(x = reorder(depocu, n), y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Top 10 departamentos (ocurrencia)", x = "Departamento", y = "Cantidad") +
+  theme_minimal()
+```
+
+# CLUSTERING

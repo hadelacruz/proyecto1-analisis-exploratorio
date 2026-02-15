@@ -314,7 +314,6 @@ divorcios_limpio %>%
        y = "Edad")
 
 
-
 #Escolaridad vs edad mujer
 
 divorcios_limpio %>%
@@ -333,9 +332,14 @@ divorcios_limpio %>%
        x = "Nivel educativo",
        y = "Edad")
 
+```
+En la gráfica de los hombres se observa que la mediana de edad aumenta conforme aumenta el nivel educativo. El nivel educativo "básico" muestra las edades más bajas, mientras que "Postgrado" muestra las más altas. Existe superpopsición entre la distribución de las cajas, lo que indica que la escolaridad influye, sin embargo no determina completamente la edad en la que se divorcian. Además también se observan valores extremos en todos los niveles, sugiriendo que igual puede ocurrir en edades avanzadas independientemente del nivel educativo.
+
+Por otro lado, en la gráfica de mujeres se observa un incremente progresivo desde básico hasta postgrado, el cual presenta las edades más altas y menos valores extremos. En esta gráfica se observa una asociación más fuerte entre el nivel educativo y la edad de la mujer. Indicando que las mujeres con postgrado tienden a divorciarse a mayor edad. Otro punto importante es que, en todos los niveles educativos, los hombres presentan una edad promedio mayor que las mujeres, marcando así una diferencia edad edades por género.
 
 
 
+```{r}
 
 #departamento vs edad
 
@@ -379,6 +383,12 @@ ggplot(edad_dep,
        fill = "Sexo")
 
 
+```
+
+En esta gráfica se puede observar que, independientemente del departamento, los hombres tienden a divorciarse a una edad más avanzada que las mujeres, confirmando que la brecha de edad por género es consistente en todo el país. Donde se puede ver mayor esta diferencia es en departamentos como Jutiapa o Zacapa, mientras que donde se observa una menor diferencia es en Totonicapán y Quetzaltenango. Esto sugiere que la diferencia por género constituye un rasgo estructural del divorcio y no necesariamente está relacionada con el territorio donde sucede.También se puede observar que en Totonicapán las personas suelen divorciarse a edades más jóvenes, mientras que en Izabal los divorcios ocurren a edades más avanzadas en promedio. Sin embargo, estas variaciones territoriales no modifican el patrón general por género.
+
+```{r}
+
 #escolaridad hombre vs escolaridad mujer
 
 divorcios_limpio %>%
@@ -398,7 +408,7 @@ divorcios_limpio %>%
 
 
 ```
-
+Al cruzar las variables de escolaridad del hombre y escolaridad de la mujer en los divorcios se puede observar que las parejas cuyo nivel educativo es ambos diversificado presentan mayor cantidad de divorcios. También se observa un patrón en la diagonal del gráfico, donde las parejas que se divorcian tienden a tener el nivel educativo igual o muy cercano. Por otro lado, mientras más separados están los niveles educativos entre el hombre y la mujer, menor es la cantidad de divorcios. Existen algunos niveles extremos como combinación entre "Ninguno" y "Postgrado", los cuales son poco frecuentes. Esto sugiere que el nivel educativo de la pareja puede llegar a ser un factor importante al momento de tomar la decisión del divorcio. 
 
 #PREGUNTAS DE INVESTIGACION
 1. ¿Es más frecuente el divorcio en las áreas más urbanas?
@@ -407,8 +417,6 @@ divorcios_limpio %>%
 divorcios_limpio %>%
   mutate(depocu = as_factor(depocu)) %>%
   count(depocu, sort = TRUE)
-
-
 
 
 ```
@@ -522,7 +530,41 @@ tabla
 
 ```
 
+5. ¿La edad promedio de divorcio ha disminuido con el paso del tiempo?
 
+```{r}
+
+divorcios_limpio %>%
+  group_by(anioocu) %>%
+  summarise(media_h = mean(edadhom, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = factor(anioocu), y = media_h, group = 1)) +
+  geom_line(color = "#c0392b", linewidth = 1.2) +
+  geom_point(color = "#e67e22", size = 3) +
+  labs(title = "Edad promedio del hombre por año",
+       x = "Año",
+       y = "Edad promedio") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+divorcios_limpio %>%
+  group_by(anioocu) %>%
+  summarise(media_m = mean(edadmuj, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = factor(anioocu), y = media_m, group = 1)) +
+  geom_line(color = "#c0392b", linewidth = 1.2) +
+  geom_point(color = "#e67e22", size = 3) +
+  labs(title = "Edad promedio de la mujer por año",
+       x = "Año",
+       y = "Edad promedio") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+
+```
 
 # GRAFICOS EXPLORATORIOS
 

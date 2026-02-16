@@ -1,9 +1,10 @@
 ---
 title: "Proyecto 1: Análisis Exploratorio de Datos"
-author: "Grupo 4"
+author: "Grupo 4: Dilary Sarahí, Sofía López, Fabian Prado, Humberto de la Cruz, Daniel Juárez"
 date: "`r Sys.Date()`"
 output: html_document
 ---
+### Repositorio: https://github.com/hadelacruz/proyecto1-analisis-exploratorio
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
@@ -25,7 +26,6 @@ library(moments)
 
 ```{r}
 # --- 1. CARGA DE ARCHIVOS Y ESTANDARIZACIÓN ---
-# Asegúrate de tener estas carpetas y archivos .sav en 'data/'
 ruta <- "data/"
 archivos <- list.files(path = ruta, pattern = "\\.sav$", full.names = TRUE)
 

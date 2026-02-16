@@ -855,3 +855,22 @@ Analizar exploratoriamente los registros de divorcios en Guatemala para identifi
 5. Interpretar las características de los grupos identificados.
 
 ---
+
+## c) Descripción de los datos y proceso de limpieza
+
+El conjunto de datos utilizado proviene del INE y corresponde a registros oficiales de divorcios en formato .sav, integrando más de diez años de información.
+
+Para el análisis fue necesario realizar un proceso de integración y limpieza que incluyó:
+
+- Lectura y unificación de múltiples archivos anuales.
+- Estandarización de nombres de variables.
+- Homologación de categorías de pertenencia étnica.
+- Conversión de variables categóricas a formatos adecuados.
+- Tratamiento de valores atípicos en la variable edad con valores mayores a 100 años que fueron reemplazados por NA.
+- Revisión y manejo de valores faltantes.
+
+El conjunto final permitió realizar análisis descriptivos, cruces de variables y un análisis de agrupamiento para identificar perfiles característicos de divorcio.
+
+---
+
+

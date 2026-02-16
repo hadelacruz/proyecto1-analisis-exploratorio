@@ -827,3 +827,31 @@ Estas afirmaciones suelen basarse en creencias generales y no siempre en anális
 Se plantea la necesidad de explorar los registros de divorcios para determinar cómo se distribuyen según edad, nivel educativo y ubicación territorial, y si estos factores influyen en el comportamiento observado.
 
 ---
+
+
+
+## b) Problema científico y objetivos
+
+### Problema científico
+
+¿Existen patrones demográficos, educativos y geográficos significativos que caractericen los divorcios registrados en Guatemala durante el período analizado?
+
+Este problema busca determinar si variables como la edad, el nivel educativo y el departamento influyen en las características del divorcio.
+
+---
+
+### Objetivo General
+
+Analizar exploratoriamente los registros de divorcios en Guatemala para identificar patrones demográficos, educativos y geográficos en el período estudiado.
+
+---
+
+### Objetivos Específicos
+
+1. Describir estadísticamente la edad promedio de hombres y mujeres al momento del divorcio.
+2. Analizar la relación entre nivel educativo y edad promedio de divorcio.
+3. Evaluar la concentración geográfica de divorcios por departamento.
+4. Identificar perfiles de divorcio mediante técnicas de clustering.
+5. Interpretar las características de los grupos identificados.
+
+---

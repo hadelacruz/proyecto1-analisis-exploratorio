@@ -408,7 +408,7 @@ divorcios_limpio %>%
 
 
 ```
-Al cruzar las variables de escolaridad del hombre y escolaridad de la mujer en los divorcios se puede observar que las parejas cuyo nivel educativo es ambos diversificado presentan mayor cantidad de divorcios. También se observa un patrón en la diagonal del gráfico, donde las parejas que se divorcian tienden a tener el nivel educativo igual o muy cercano. Por otro lado, mientras más separados están los niveles educativos entre el hombre y la mujer, menor es la cantidad de divorcios. Existen algunos niveles extremos como combinación entre "Ninguno" y "Postgrado", los cuales son poco frecuentes. Esto sugiere que el nivel educativo de la pareja puede llegar a ser un factor importante al momento de tomar la decisión del divorcio. 
+Al cruzar las variables de escolaridad del hombre y escolaridad de la mujer en los divorcios se puede observar que las parejas cuyo nivel educativo es ambos diversificado presentan mayor cantidad de divorcios. También se observa un patrón en la diagonal del gráfico, donde las parejas que se divorcian tienden a tener el nivel educativo igual o muy cercano. Por otro lado, mientras más separados están los niveles educativos entre el hombre y la mujer, menor es la cantidad de divorcios. Existen algunos niveles extremos como combinación entre "Ninguno" y "Postgrado", los cuales son poco frecuentes. Esto sugiere que el nivel educativo de la pareja puede llegar a ser un factor importante al momento de tomar la decisión del divorcio.
 
 #PREGUNTAS DE INVESTIGACION
 1. ¿Es más frecuente el divorcio en las áreas más urbanas?
@@ -418,8 +418,35 @@ divorcios_limpio %>%
   mutate(depocu = as_factor(depocu)) %>%
   count(depocu, sort = TRUE)
 
+divorcios_limpio %>%
+  mutate(depocu = as_factor(depocu)) %>%
+  count(depocu) %>%
+  mutate(prop = n / sum(n)) %>%
+  ggplot(aes(x = reorder(depocu, prop), y = prop)) +
+  geom_col(fill = "#3498db") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Proporción de divorcios por departamento",
+       x = "Departamento",
+       y = "Proporción")
+
+divorcios_limpio %>%
+  mutate(mupocu = as_factor(mupocu)) %>%
+  count(mupocu, sort = TRUE) %>%
+  slice_head(n = 15) %>%
+  ggplot(aes(x = reorder(mupocu, n), y = n)) +
+  geom_col(fill = "#2ecc71") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Top 15 municipios con más divorcios",
+       x = "Municipio",
+       y = "Cantidad")
+
 
 ```
+
+En la tabla se muestra es mas frecuente el divorcio en las áreas que están más urbanizadas, como lo es el departamento de Guatemala, que representa aproximadamente 35% del total de los divorcios registrados. Pasa lo mismo con los municipios, los municipios con mayor concentración de divorcios, como Guatemala, Mizco, Quetzaltenango y Villa Nueva, son áreas urbanas. Por lo tanto, según indican los resultados, si se podría decir que hay mayor tasa de divorcio en los sectores urbanos del pais.
+
 
 2. ¿Las personas con mayor nivel educativo se divorcian a edades más avanzadas?
 
@@ -482,21 +509,45 @@ divorcios_limpio %>%
 
 ```
 
+Los resultados muestran una relación positiva entre el nivel educativo y la edad promedio de divorcio, especialmente en los niveles “universitario” y “postgrado”. Se logra identificar que, en promedio, las personas con mayor nivel educativo tienden a divorciarse a edades más altas. No obstante, las cajas se encuentran muy cercanas entre las distribuciones, por lo que el nivel educativo no determina completamente la edad de divorcio, sino que es un factor asociado. Esto se observa ya que en ambos sexos aparece un patrón similar, aunque esta relación se ve más marcada en las mujeres.
 
-3. ¿La diferencia de edad influye en el divorcio?
+3.¿La mayoria de los divorcios ocurre en parejas con diferencias de edad más altas?
 
 ```{r}
-divorcios_limpio %>%
-  mutate(dif_edad = edadhom - edadmuj) %>%
-  summary()
-
 
 ggplot(divorcios_limpio,
        aes(x = edadhom - edadmuj)) +
-  geom_histogram()
+  geom_histogram(aes(y = ..density..),
+                 bins = 70,
+                 fill = "lightblue",
+                 color = "white") +
+  geom_density(color = "orange", linewidth = 1.2) +
+  coord_cartesian(xlim = c(-15, 30)) +
+  theme_minimal() +
+  labs(title = "Distribución de la diferencia de edad",
+       x = "Diferencia de edad",
+       y = "Densidad")
+
+
+
+
+divorcios_limpio %>%
+  mutate(dif_edad = edadhom - edadmuj) %>%
+  summarise(
+    media = mean(dif_edad, na.rm = TRUE),
+    mediana = median(dif_edad, na.rm = TRUE),
+    sd = sd(dif_edad, na.rm = TRUE),
+    min = min(dif_edad, na.rm = TRUE),
+    max = max(dif_edad, na.rm = TRUE)
+  )
+
 
 
 ```
+
+En la gráfica se muestra que la concentración está entre -5 y 5 años y que, a medida que la diferencia aumenta, la frecuencia de matrimonios va disminuyendo. De igual forma, se observa que las diferencias mayores a 15 años son menos frecuentes. También se puede ver que las estadísticas indican una mediana de 2 años, lo que significa que la mitad de las parejas tiene una diferencia de edad de alrededor de 2 años. La desviación estándar muestra que sí existe variabilidad, aunque no es excesiva. Por lo tanto, a partir de este análisis se puede concluir que la mayoría de los divorcios no ocurre en parejas con mayor diferencia de edad. Aunque existen valores extremos con diferencias muy altas, la mayor cantidad de divorcios presenta diferencias de edad pequeñas, por lo que se contradice el supuesto inicial.
+
+
 4. ¿Las parejas que se divorcian tienden a tener niveles educativos similares?
 ```{r}
 divorcios_limpio %>%
@@ -530,41 +581,44 @@ tabla
 
 ```
 
-5. ¿La edad promedio de divorcio ha disminuido con el paso del tiempo?
+
+En la gráfica se puede observar que la mayoria de los divorcios están concentrados en la diagonal de la gráfica, donde ambos mienbros tienen el mismo nivel educativo, principalmente en el nivel de "Diversificado" De igual forma se muestra que donde los niveles educativos son muy distintos, las frecuencias son mas bajas. Por lo tanto, si se puede decir que las parejas que se divorcian tienden a tener el mismo nivel educativo o similar.  
+
+
+
+5. ¿La edad mediana de divorcio ha disminuido con el paso del tiempo?
 
 ```{r}
 
 divorcios_limpio %>%
   group_by(anioocu) %>%
-  summarise(media_h = mean(edadhom, na.rm = TRUE), .groups = "drop") %>%
-  ggplot(aes(x = factor(anioocu), y = media_h, group = 1)) +
-  geom_line(color = "#c0392b", linewidth = 1.2) +
-  geom_point(color = "#e67e22", size = 3) +
-  labs(title = "Edad promedio del hombre por año",
+  summarise(median_h = median(edadhom, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = factor(anioocu), y = median_h, group = 1)) +
+  geom_line(color = "blue", linewidth = 1.2) +
+  geom_point(color = "orange", size = 3) +
+  labs(title = "Edad mediana del hombre por año",
        x = "Año",
-       y = "Edad promedio") +
+       y = "Edad mediana") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 divorcios_limpio %>%
   group_by(anioocu) %>%
-  summarise(media_m = mean(edadmuj, na.rm = TRUE), .groups = "drop") %>%
-  ggplot(aes(x = factor(anioocu), y = media_m, group = 1)) +
-  geom_line(color = "#c0392b", linewidth = 1.2) +
-  geom_point(color = "#e67e22", size = 3) +
-  labs(title = "Edad promedio de la mujer por año",
+  summarise(median_m = median(edadmuj, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = factor(anioocu), y = median_m, group = 1)) +
+  geom_line(color = "pink", linewidth = 1.2) +
+  geom_point(color = "orange", size = 3) +
+  labs(title = "Edad mediana de la mujer por año",
        x = "Año",
-       y = "Edad promedio") +
+       y = "Edad mediana") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-
-
-
-
-
 ```
+
+A partir de la gráfica de la edad mediana de divorcio por año, se observa que no existe una disminución con el paso del tiempo. En el caso de los hombres, la mediana se mantiene estable entre 2013 y 2017, y posteriormente presenta un ligero aumento hasta alcanzar los 35 años en 2021 y 2022. De igual forma, en las mujeres la mediana pasa de 29 años en 2013 a 32 años en los últimos años del período analizado. Por lo tanto, los datos contradicen el supuesto inicial, ya que no se evidencia una reducción en la edad mediana de divorcio, sino más bien una tendencia leve al aumento.
+
 
 # GRAFICOS EXPLORATORIOS
 

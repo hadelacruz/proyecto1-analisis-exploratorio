@@ -874,3 +874,18 @@ El conjunto final permitió realizar análisis descriptivos, cruces de variables
 ---
 
 
+## d) Conclusiones del análisis exploratorio
+
+- Se confirma una diferencia estructural por género: en todos los departamentos del país, los hombres presentan una edad promedio mayor que las mujeres al momento del divorcio. Este patrón se mantiene constante independientemente del territorio.
+
+- Existe una relación positiva entre nivel educativo y edad promedio de divorcio. Las personas con educación universitaria y postgrado tienden a divorciarse a edades más avanzadas. Sin embargo, la superposición entre distribuciones indica que la educación es un factor asociado, pero no determinante.
+
+- El departamento de Guatemala concentra aproximadamente el 35% del total de divorcios registrados. Asimismo, los municipios con mayor número de casos corresponden principalmente a áreas urbanas como Guatemala, Mixco, Villa Nueva y Quetzaltenango, lo que respalda la hipótesis de mayor incidencia en sectores urbanos.
+
+- El análisis de clustering permitió identificar cuatro perfiles diferenciados principalmente por edad:
+  - Cluster 4 – Parejas Jóvenes (36%): Hombre 27.3 años, Mujer 24.6 años.
+  - Cluster 1 – Parejas de Edad Media (37%): Hombre 34.6 años, Mujer 31.9 años.
+  - Cluster 3 – Parejas Maduras (20%): Hombre 44.1 años, Mujer 40.3 años.
+  - Cluster 2 – Parejas Mayores (7%): Hombre 58.3 años, Mujer 52.4 años.
+
+Aproximadamente el 73% de los divorcios ocurren en parejas menores de 45 años, lo que indica que el fenómeno se concentra principalmente en etapas tempranas y medias de la vida adulta. Por eso la edad se identifica como el principal factor diferenciador entre los clusters obtenidos, mientras que las variables geográficas y étnicas presentan distribuciones similares entre los grupos. Los resultados muestran que el divorcio en Guatemala presenta patrones demográficos estructurados asociados principalmente a la edad y al nivel educativo, con una fuerte concentración en áreas urbanas.

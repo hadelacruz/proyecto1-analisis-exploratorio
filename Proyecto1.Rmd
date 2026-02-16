@@ -813,3 +813,17 @@ El análisis de k-means (k=4) identificó cuatro perfiles de edad distintos en l
 4. **Relación edad-educación**: Se observa que los clusters más jóvenes (1 y 4) tienen mayor proporción de educación Diversificado y Universitario, mientras que el Cluster 2 (parejas mayores) muestra mayor proporción de Primaria y Ninguno, reflejando cambios generacionales en acceso educativo.
 
 5. **Distribución por etapa**: Aproximadamente 73% de los divorcios ocurren en parejas menores de 45 años (Clusters 1 y 4), sugiriendo que los divorcios son más frecuentes en etapas tempranas del matrimonio.
+
+
+
+# --- Punto 2 ---
+
+## a) Situación problemática
+
+En Guatemala, el divorcio constituye un fenómeno social que refleja transformaciones en la estructura familiar, las dinámicas de género y las condiciones socioeconómicas del país. A lo largo de los años, se ha mantenido la percepción de que los divorcios son más frecuentes en áreas urbanas, que las personas con mayor nivel educativo tienden a divorciarse a edades más avanzadas y que existe una diferencia de edad constante entre hombres y mujeres al momento de la ruptura matrimonial.
+
+Estas afirmaciones suelen basarse en creencias generales y no siempre en análisis estadísticos formales. Dado que el INE dispone de registros históricos detallados de divorcios, resulta necesario analizar sistemáticamente estos datos para identificar si realmente existen patrones demográficos y geográficos significativos que caractericen el fenómeno.
+
+Se plantea la necesidad de explorar los registros de divorcios para determinar cómo se distribuyen según edad, nivel educativo y ubicación territorial, y si estos factores influyen en el comportamiento observado.
+
+---
